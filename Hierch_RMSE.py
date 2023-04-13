@@ -2,14 +2,20 @@
 from HeadObjective import HeadObjective
 from RMSE_Fragment import RMSE_Fragment
 #=============================================================================================
-class SymbolicObjective():
+class HierObjective():
+    '''
+    This class is used to create a symbolic objective function that can be used as a function
+    for optimization. The objective function is a chain of heriacle objects. 
+    '''
     #---------------------------------------------------------------------
-    def __init__(self, datasets, dumpfilename='dumpfile.dat'):
-        objstack = [ HeadObjective(nullscore=0.0) ]
+    def __init__(self, datasets, model, dumpfilename='dumpfile.dat'):
+        #Create the initial list.
+        objstack = [ HeadObjective(model, nullscore=0.0) ]
         
         #Create the list of objects to be used in the objective function.
         for dataset in datasets:
-            rmseobj = RMSE_Fragment(X_train, Y_train, parentobj=None, pointtol=0.25, meantol=0.1, nullscore=150.0),
+            X_train, Y_train = dataset
+            rmseobj = RMSE_Fragment(X_train, Y_train, parentobj=None, pointtol=0.02, meantol=0.05, nullscore=5.5)
             objstack.append(rmseobj)
 
         #We now embed all the objects into a chain of heriacle objects.
@@ -24,19 +30,23 @@ class SymbolicObjective():
         
         #Create a dump file to store the results of the optimization.
         self.dumpfilename = dumpfilename
-        self.dumpfile = open(self.dumpfilename, 'w')
+        if self.dumpfilename is not None:
+            self.dumpfile = open(self.dumpfilename, 'w')
 
     #---------------------------------------------------------------------
-    def __call__(self, parameters, verbose=False):
-        score = self.heracleobj(parameters=parameters, verbose=verbose)
-        if not verbose:
+    def __call__(self, parameters, verbose=False, **kwargs):
+        score = self.heracleobj(parameters=parameters, verbose=verbose, **kwargs)
+        if not verbose or not self.dumpfilename is None:
             outstr = ' '.join([str(x) for x in parameters])
             self.dumpfile.write('%s | %s \n'%(outstr, score))
 
         return score
     #---------------------------------------------------------------------
     def __del__(self):
-        self.dumpfile.close()
+        try:
+            self.dumpfile.close()
+        except AttributeError:
+            pass
     #---------------------------------------------------------------------
 #============================================================================================
 if __name__ == "__main__":
