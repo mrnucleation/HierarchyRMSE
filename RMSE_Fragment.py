@@ -1,4 +1,3 @@
-from ScriptTemplate import InputTemplate
 from ObjectiveClass import HeriacleObjective
 from time import time
 import os
@@ -45,22 +44,26 @@ class RMSE_Fragment(HeriacleObjective):
         #Compute the mean and maximum disagreement. If the mean is less than the
         #meantol or the maximum is less than the pointtol, then the score is
         #the mean of the RMSE. Otherwise, the score is the nullscore.
-        rmse_mean = np.mean(Y_rmse)
+        rmse_mean = np.sqrt(np.mean(Y_rmse))
         rmse_max = np.max(Y_rmse)
         score += rmse_mean
-        if rmse_mean < self.meantol or rmse_max < self.pointtol:
+        print('Depth:%s, RMSE Mean:%s , RMSE Max:%s'%(depth,rmse_mean, rmse_max))
+        if rmse_mean < self.meantol and rmse_max < self.pointtol:
             score += self.getchildscores(parameters=parameters, depth=depth, **kwargs)
         else:
             score -= self.nullscore
-            score += self.getnullscores(parameters=parameters, depth=depth, **kwargs)
+            score += self.getnullscores(depth=depth)
         return score
     #----------------------------------------------------------
-    def rmse(self, data, target):
+    def rmse(self, predict, target):
         '''
         This function calculates the root mean square error of the data set.
         It returns an array of the RMSE for each point in the data set.
         This is done so both the max and mean can be calculated.
+        
+        data: The data set to be used for the objective function
+        target: The target data set to be used for the objective function
         '''
-        return np.sqrt(np.mean((data - target)**2)
+        return np.mean(predict - target)**2
     #----------------------------------------------------------
 #==============================================================================
