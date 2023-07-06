@@ -15,7 +15,7 @@ class HierObjective():
         #Create the list of objects to be used in the objective function.
         for dataset in datasets:
             X_train, Y_train = dataset
-            rmseobj = RMSE_Fragment(X_train, Y_train, parentobj=None, pointtol=0.02, meantol=0.05, nullscore=5.5)
+            rmseobj = RMSE_Fragment(X_train, Y_train, parentobj=None, pointtol=0.05, meantol=0.5, nullscore=0.7)
             objstack.append(rmseobj)
 
         #We now embed all the objects into a chain of heriacle objects.

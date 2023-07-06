@@ -52,7 +52,7 @@ def sampler(model, norm, rmax):
     # Since the CDF is a monotonically increasing function (IE if x1 > x2 then f(x1) > f(x2))
     # we can narrow down the value using a continuous version of a binary search.
     # This gives us a value that is close enough we can then minimize in just a few steps.
-    for i in range(7):
+    for i in range(8):
 #        r = (currmax-currmin)*random() + currmin
         r = (currmax+currmin)*0.5
         area = cdffunc(r, model, rmax)/norm
@@ -302,13 +302,23 @@ class LogisticSearch(ParameterData):
         #itself as a solution.  
 #        rmin = 0.02*rmax
         rmin = 0.0
-        r = random() * (rmax-rmin) + rmin
+        rmax *= 2.0
         norm = np.linalg.norm(u)
-        if norm < 1e-30:
+        if norm < 1e-50:
             return self.localshift(node=node)
         u = u/norm
-        x = r*u
-        x_r += x
+        while True:
+            
+            r = random() * (rmax-rmin) + rmin
+            x = r * u
+            x = x_r + x
+            if (x < self.childub).all() and (x > self.childlb).all():
+                break
+            rmax = r
+            if rmax < 1e-10:
+                return self.localshift(node=node)
+        x_r = x
+
 
         #This is a bounds check to ensure we didn't step outside of the bounds.
 #        x_r = np.where(x_r > 1.0, 1.0, x_r)
@@ -421,11 +431,28 @@ class LogisticSearch(ParameterData):
             rmax = min(disttoedge+5e-2, searchmax)
         else:
             rmax = searchmax
-        norm = np.sum(u**2) **(0.5)
+#        norm = np.sum(u**2) **(0.5)
         r = sampler(self.distancemodel, self.rnorm, searchmax)
-#        r = random()*searchmax
         if r > searchmax:
             raise ValueError("Logistic Model Broke Distance Constraint!")
+#        rmin = 0.0
+#        rmax *= 2.0
+        norm = np.linalg.norm(u)
+#        u = u/norm
+#        if norm < 1e-50:
+#            return self.localshift(node=node)
+#        while True:
+#            
+#            r = random() * (rmax-rmin) + rmin
+#            x = r * u
+#            x = x_r + x
+#            if (x < self.childub).all() and (x > self.childlb).all():
+#                break
+#            rmax = r
+#            if rmax < 1e-10:
+#                return self.localshift(node=node)
+#        x_r = x
+#        r = random()*searchmax
         x = r*u/norm
         x_r += x
 

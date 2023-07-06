@@ -45,11 +45,12 @@ def UCT_Unique_Score(node, uniqval, exploreconstant, doprint=False):
     nodeweight = nodeEnergy
 
     scalefunc = lambda x: x
-    if len(playoutEList) < 30:
-        exploitweight = nodeEnergy
-    else:
-        exploitweight = 1e300
+#    if len(playoutEList) < 30:
+#        exploitweight = nodeEnergy
+#    else:
+#        exploitweight = 1e300
     cnt = 1
+    exploitweight = nodeEnergy
 
     if len(playoutEList) > 0:
         for i, energy in enumerate(playoutEList):

@@ -2,6 +2,7 @@ from ObjectiveClass import HeriacleObjective
 from time import time
 import os
 import numpy as np
+import tensorflow as tf
 
 #==============================================================================
 class RMSE_Fragment(HeriacleObjective):
@@ -20,8 +21,10 @@ class RMSE_Fragment(HeriacleObjective):
         self.name = 'RMSE_Fragment'
         
         # The data set to be used for the objective function
-        self.X_train = X_train
-        self.Y_train = Y_train
+        self.X_train = tf.constant(X_train, dtype=tf.float32)
+        print(self.X_train)
+        self.Y_train = tf.constant(Y_train, dtype=tf.float32)
+        print(self.Y_train)
         
         # The tolerances for the objective function
         #Pointtol is the maximum error allowed for a single point
@@ -38,17 +41,20 @@ class RMSE_Fragment(HeriacleObjective):
         model = kwargs['model']
         
         # Calculate the RMSE of the data set
-        Y_pred = model.predict(parameters)
+#        Y_pred = model.predict(self.X_train)
+        Y_pred = model(self.X_train, training=True)
         Y_rmse = self.rmse(self.Y_train, Y_pred)
+#        print(Y_rmse)
         
         #Compute the mean and maximum disagreement. If the mean is less than the
         #meantol or the maximum is less than the pointtol, then the score is
         #the mean of the RMSE. Otherwise, the score is the nullscore.
-        rmse_mean = np.sqrt(np.mean(Y_rmse))
-        rmse_max = np.max(Y_rmse)
-        score += rmse_mean
-        print('Depth:%s, RMSE Mean:%s , RMSE Max:%s'%(depth,rmse_mean, rmse_max))
-        if rmse_mean < self.meantol and rmse_max < self.pointtol:
+        rmse_mean = tf.math.reduce_mean(Y_rmse)
+        rmse_max = tf.reduce_max(Y_rmse)
+        score += rmse_mean + rmse_max
+#        score += rmse_mean 
+        print('Depth:%s, RMSE Mean:%s, RMSE Max:%s'%(depth, rmse_mean.numpy(), rmse_max.numpy()))
+        if rmse_mean < self.meantol and rmse_max < self.pointtol: 
             score += self.getchildscores(parameters=parameters, depth=depth, **kwargs)
         else:
             score -= self.nullscore
@@ -64,6 +70,7 @@ class RMSE_Fragment(HeriacleObjective):
         data: The data set to be used for the objective function
         target: The target data set to be used for the objective function
         '''
-        return np.mean(predict - target)**2
+        return tf.math.square(predict - target)
+#        return tf.math.reduce_mean(predict - target)**2
     #----------------------------------------------------------
 #==============================================================================

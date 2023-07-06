@@ -43,8 +43,9 @@ class ParameterData(object):
             self.depthscale = [sqrt(self.dimensions)*x for x in self.depthscale]
         else:
             self.depthscale = depthscale
-        self.randomscale = (1.0/0.9-0.90)*random() + 0.90
-        self.randomscale *= parentscale
+        self.randomscale = 1.0
+#        self.randomscale = (1.0/0.9-0.90)*random() + 0.90
+#        self.randomscale *= parentscale
 
         if (lbounds is None) or (ubounds is None):
             raise InvalidParameterBounds("The upper and lower parameter bounds must be defined!")
