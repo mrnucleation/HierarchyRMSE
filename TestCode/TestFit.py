@@ -1,40 +1,56 @@
 import sys
 sys.path.append('../')
 from Hierch_RMSE import HierObjective
-from NeuralNet import NeuralNet
+from NeuralNet import NeuralNet, kerasmodel
 import numpy as np
 from MCTSOpt import Tree
 from LogisticSearch import LogisticSearch
+#from UniformSearch import UniformSearch as LogisticSearch
 #from BayesianObject import BayesianData as LogisticSearch
 from SelectionRule_UBUnique import UBUnique
 from math import sqrt
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 
 #Create a data set using numpy which plots the function y = sin(x).
 #The data set is a 2D array with 100 rows and 2 columns.
 
 datasets = []
-for i in range(3):
-    X = np.random.uniform(0, 2*np.pi, size=30)
-    Y = np.sin(X) + np.random.normal(0.0, 0.1, size=X.shape[0])
+for i in range(1):
+    X = np.random.uniform(0, 1.0, size=50)
+    Y = np.sin(2.0*np.pi*X) 
+    X = X.reshape(-1, 1)
+    Y = Y.reshape(-1, 1)
     datasets.append((X, Y))
 
-model = NeuralNet(1, 1)
+print(X)
+print(Y)
 
-weights = model.get_weights()
+#model = NeuralNet(1, 1)
+model = kerasmodel()
+model.summary()
 nweights = 0
-for layer in weights:
-    nweights += layer.size
+for layer in model.layers: 
+    print(layer.get_config())
+    weights = layer.get_weights()[0]
+    biasweights = layer.get_weights()[1]
+    print(weights)
+    print(biasweights)
+    nweights += weights.size + biasweights.size
+#    nweights += weights.size 
 
 print(nweights)
 
+
 objective = HierObjective(datasets, model)
 
-depthscale = [10.0,  0.4, 0.2, 0.1, 0.05, 0.01]
-depthscale = [sqrt(nweights)*x for x in depthscale]
+depthscale = [10.0, 0.5, 0.4] + [0.3 for i in range(3)] 
+#depthscale = [sqrt(nweights)*x for x in depthscale]
 
-startset = np.random.normal(0, 0.001, size=nweights)
-ubounds = np.full(nweights, 5.5)
-lbounds = np.full(nweights, -5.5)
+startset = np.random.normal(0, 0.01, size=nweights)
+ubounds = np.full(nweights, 3.7)
+lbounds = np.full(nweights, -3.7)
 
 options ={'verbose':2}
 
@@ -45,10 +61,11 @@ indata = LogisticSearch(parameters=startset, ubounds=ubounds, lbounds=lbounds, l
 tree = Tree(seeddata=indata, 
         playouts=10, 
         selectfunction=UBUnique, 
-        headexpansion=15,
+        headexpansion=10,
         verbose=True)
 tree.expandfromdata(newdata=indata)
-depthlimit = 25
+tree.expand(nExpansions=1)
+depthlimit = 35000
 for iLoop in range(1,500):
     print("Loop Number: %s"%(iLoop))
     tree.playexpand(nExpansions=1, depthlimit=depthlimit)

@@ -1,0 +1,9 @@
+*
+!*/
+!.gitignore
+!LICENSE
+!*.py
+!*.sh
+!*.f90
+!*.f
+

@@ -1,10 +1,13 @@
-from NeuralNet import NeuralNet
+from NeuralNet import NeuralNet, kerasmodel
 import numpy as np
+import tensorflow as tf
 
-model = NeuralNet(1, 1)
-X_Test = np.random.uniform(0, 2*np.pi, size=100)
-Y_Test = np.sin(X_Test) + np.random.normal(-0.01, 0.01, size=X_Test.shape[0])
+model = tf.keras.models.load_model('finalmodel.keras')
+X_Test = np.linspace(0, 1.0, 100)
+Y_Test = np.sin(X_Test*2*np.pi) 
 Y_Pred = model.predict(X_Test)
+print(Y_Pred)
+'''
 minscore = 1e300
 minparams = None
 with open('dumpfile.dat', "r") as f:
@@ -16,9 +19,7 @@ with open('dumpfile.dat', "r") as f:
             minscore = score
             minparams = parameters
             print(minscore)
-
 print(minparams)
-model = NeuralNet(1, 1)
 weights = model.get_weights()
 nweights = 0
 for i, layer in enumerate(weights):
@@ -27,6 +28,7 @@ for i, layer in enumerate(weights):
         nweights += 1
 model.set_weights(weights)
     
+'''
 
 
 #A function which plots the data set and the function y = sin(x) using matplotlib.
@@ -35,5 +37,6 @@ def plot(X, Y, Y_Pred):
     plt.plot(X, Y, 'o')
     plt.plot(X, Y_Pred)
     plt.show()
+#    plt.savefig('fig.png')
     
 plot(X_Test, Y_Test, Y_Pred)
