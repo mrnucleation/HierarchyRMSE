@@ -1,7 +1,7 @@
 *
 !*/
-!.gitignore
 !*.py
+!*.npy
 !*.f90
 !*.f
 
